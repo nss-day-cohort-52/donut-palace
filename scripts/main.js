@@ -1,12 +1,9 @@
 import { getEmployees, getOrders, getProducts } from "./database.js";
 
-const ordersArray = getOrders()
+
 const productsArray = getProducts()
 const employeeArray = getEmployees()
-
-
-const maxGrossProduct = (orders) => {}
-
+const ordersArray = getOrders()
 
 const orderSum = (orders) => {
     // Iterate the order and add up the totals
@@ -17,7 +14,7 @@ const orderSum = (orders) => {
 
     return grandTotal
 }
-const ordersByProduct = (orders, productId) => {
+const revenueByProduct = (orders, productId) => {
     let totalOfProduct = 0
 
     for (const order of orders) {
@@ -27,7 +24,6 @@ const ordersByProduct = (orders, productId) => {
     }
     return totalOfProduct
 }
-
 const topSalesperson = (orders, employees) => {
     let employeeProfitTracker = {
         1: 0,
@@ -40,11 +36,11 @@ const topSalesperson = (orders, employees) => {
     }
 
     for (const order of orders) {
+        // Using square bracket notation to access a property value
         employeeProfitTracker[order.employeeId] += order.total
     }
 
     const answer = Object.keys(employeeProfitTracker).reduce((a, b) => employeeProfitTracker[a] > employeeProfitTracker[b] ? a : b)
-    // "5"
 
     for (const employee of employees) {
         if (employee.id === parseInt(answer)) {
@@ -53,8 +49,6 @@ const topSalesperson = (orders, employees) => {
     }
 
 }
-
-// Get all orders for a month
 const monthlyOrders = (orders, month, year) => {
     const thisMonthsOrders = []
 
@@ -72,8 +66,7 @@ const monthlyOrders = (orders, month, year) => {
 
     return thisMonthsOrders
 }
-
-const salesByEmployee = (orders, employeeId) => {
+const revenueByEmployee = (orders, employeeId) => {
     let sales = 0
 
     for (const order of orders) {
@@ -83,19 +76,113 @@ const salesByEmployee = (orders, employeeId) => {
     }
     return sales
 }
+const getProductId = (products, nameOfProduct) => {
+    for (const product of products) {
+        if (product.name === nameOfProduct) {
+            return product.id
+        }
+    }
+}
+const orderCountByProduct = (orders, productId) => {
+    let count = 0
+
+    for (const order of orders) {
+        if (productId === order.productId) {
+            count += 1
+        }
+    }
+
+    return count
+}
+
+/*
+    Vocabulary term to remember and learn about...
+    MEMOIZATION
+*/
+const topProduct = (orders, products) => {
+    let productProfitTracker = { }
+
+    for (const order of orders) {
+        if (productProfitTracker[order.productId]) {
+            productProfitTracker[order.productId] += order.total
+        }
+        else {
+            productProfitTracker[order.productId] = order.total
+        }
+    }
+
+    const answer = Object.keys(productProfitTracker).reduce((a, b) => productProfitTracker[a] > productProfitTracker[b] ? a : b)
+
+    for (const product of products) {
+        if (product.id === parseInt(answer)) {
+            return product
+        }
+    }
+}
+
+/*
+    Highest revenue product of all time
+*/
+const topDogProduct = topProduct(ordersArray, productsArray)
+console.log(`Our top selling product of all time is ${topDogProduct.name}`)
+
+/*
+    Total profit for milk chocolate donuts sold in a particular month
+*/
+const productToFind = "Milk Chocolate"
+const productId = getProductId(productsArray, productToFind)
+
+
+const april2021Orders = monthlyOrders(ordersArray, 4, 2021)
+const milkChocolateRevenueInApril = revenueByProduct(april2021Orders, productId)
+console.log(`We sold ${milkChocolateRevenueInApril.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  })} in revenue in April for Milk Chocolate`)
+
+
+/*
+    Number of milk chocolate donuts sold in a particular month
+*/
+
+// Filter all order to just the ones in December of 2020
+const december2020Orders = monthlyOrders(ordersArray, 12, 2020)
+
+const milkChocolateCount = orderCountByProduct(december2020Orders, productId)
+console.log(`We have sold ${milkChocolateCount} of ${productToFind} in December of 2020`)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
     Top salesperson for this month
 */
 const ordersForThisMonth = monthlyOrders(ordersArray, 5, 2021)
 const topDogForThisMonth = topSalesperson(ordersForThisMonth, employeeArray)
-const topDogSales = salesByEmployee(ordersForThisMonth, topDogForThisMonth.id)
+const topDogSales = revenueByEmployee(ordersForThisMonth, topDogForThisMonth.id)
 console.log(`Top salesperson for May is ${topDogForThisMonth.firstName} ${topDogForThisMonth.lastName}: ${topDogSales.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
   })}`)
-
-
 
 
 /*
@@ -108,7 +195,7 @@ console.log(`The top salesperson of all time is ${topDog.firstName} ${topDog.las
 /*
     Total receipts for avocado donuts (all time)
 */
-const avocadoTotal = ordersByProduct(ordersArray, 3)
+const avocadoTotal = revenueByProduct(ordersArray, 3)
 console.log(`Total avocado sales is ${avocadoTotal.toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -124,28 +211,3 @@ console.log(`Total sales of all time is ${totalReceipts.toLocaleString('en-US', 
     currency: 'USD',
   })}`)
 
-
-
-
-
-
-
-
-/*
-    Top salesperson for last month
-*/
-
-
-/*
-    Milk chocolate donuts sold in a particular month
-*/
-
-
-/*
-    Total profit for milk chocolate donuts sold in a particular month
-*/
-
-
-/*
-    Top grossing product for January
-*/
